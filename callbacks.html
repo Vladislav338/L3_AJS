@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>L3_AJS - Callbacks Demo</title>
+</head>
+<body>
+    <h1>Результаты запросов через коллбэки</h1>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function makeCallbackRequest(url, callback) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => callback(null, data))
+                .catch(error => callback(error, null));
+        }
+
+        function getAndSortPosts(callback) {
+            makeCallbackRequest('https://jsonplaceholder.typicode.com/posts', (error, posts) => {
+                if (error) return callback(error);
+                
+                const sortedPosts = posts.sort((a, b) => b.title.length - a.title.length);
+                callback(null, sortedPosts);
+            });
+        }
+
+        function getAndSortComments(callback) {
+            makeCallbackRequest('https://jsonplaceholder.typicode.com/comments', (error, comments) => {
+                if (error) return callback(error);
+                
+                const sortedComments = comments.sort((a, b) => a.name.localeCompare(b.name));
+                callback(null, sortedComments);
+            });
+        }
+
+        output.innerHTML += '<h2>Posts (отсортированы по длине title):</h2>';
+        
+        getAndSortPosts((error, posts) => {
+            if (error) {
+                output.innerHTML += `<p style="color: red;">Ошибка: ${error}</p>`;
+            } else {
+                posts.slice(0, 5).forEach(post => {
+                    output.innerHTML += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <h3>${post.title}</h3>
+                            <p><strong>ID:</strong> ${post.id}</p>
+                            <p><strong>Длина title:</strong> ${post.title.length} символов</p>
+                            <p>${post.body}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            output.innerHTML += '<h2>Comments (отсортированы по имени):</h2>';
+            
+            getAndSortComments((error, comments) => {
+                if (error) {
+                    output.innerHTML += `<p style="color: red;">Ошибка: ${error}</p>`;
+                } else {
+                    comments.slice(0, 5).forEach(comment => {
+                        output.innerHTML += `
+                            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                                <h3>${comment.name}</h3>
+                                <p><strong>Email:</strong> ${comment.email}</p>
+                                <p>${comment.body}</p>
+                            </div>
+                        `;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
